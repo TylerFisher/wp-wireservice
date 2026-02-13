@@ -425,6 +425,60 @@ class API
   }
 
   /**
+   * Get a single record from the PDS.
+   *
+   * @param string $collection The collection NSID.
+   * @param string $rkey       The record key.
+   * @return array|\WP_Error
+   */
+  public function get_record(string $collection, string $rkey)
+  {
+    $did = $this->get_did();
+
+    if (is_wp_error($did)) {
+      return $did;
+    }
+
+    return $this->pds_get("/xrpc/com.atproto.repo.getRecord", [
+      "repo" => $did,
+      "collection" => $collection,
+      "rkey" => $rkey,
+    ]);
+  }
+
+  /**
+   * List records in a collection from the PDS.
+   *
+   * @param string      $collection The collection NSID.
+   * @param int         $limit      Max records to return (default 50, max 100).
+   * @param string|null $cursor     Pagination cursor.
+   * @return array|\WP_Error
+   */
+  public function list_records(
+    string $collection,
+    int $limit = 50,
+    ?string $cursor = null,
+  ) {
+    $did = $this->get_did();
+
+    if (is_wp_error($did)) {
+      return $did;
+    }
+
+    $params = [
+      "repo" => $did,
+      "collection" => $collection,
+      "limit" => $limit,
+    ];
+
+    if ($cursor !== null) {
+      $params["cursor"] = $cursor;
+    }
+
+    return $this->pds_get("/xrpc/com.atproto.repo.listRecords", $params);
+  }
+
+  /**
    * Upload a blob to the PDS.
    *
    * @param string $file_path The local file path.

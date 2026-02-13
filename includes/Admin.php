@@ -50,6 +50,14 @@ class Admin
       $this,
       "handle_backfill_batch",
     ]);
+    add_action("wp_ajax_wireservice_get_publication_record", [
+      $this,
+      "handle_get_publication_record",
+    ]);
+    add_action("wp_ajax_wireservice_list_document_records", [
+      $this,
+      "handle_list_document_records",
+    ]);
     add_filter("plugin_action_links_wireservice/wireservice.php", [
       $this,
       "add_settings_link",
@@ -83,6 +91,23 @@ class Admin
       "ajaxUrl" => admin_url("admin-ajax.php"),
       "nonce" => wp_create_nonce("wireservice_backfill"),
     ]);
+
+    $active_tab = isset($_GET["tab"]) ? sanitize_key($_GET["tab"]) : "settings";
+
+    if ($active_tab === "records") {
+      wp_enqueue_script(
+        "wireservice-records",
+        WIRESERVICE_PLUGIN_URL . "assets/js/records.js",
+        ["jquery"],
+        WIRESERVICE_VERSION,
+        true,
+      );
+
+      wp_localize_script("wireservice-records", "wireserviceRecords", [
+        "ajaxUrl" => admin_url("admin-ajax.php"),
+        "nonce" => wp_create_nonce("wireservice_records"),
+      ]);
+    }
   }
 
   /**
@@ -793,5 +818,76 @@ class Admin
       admin_url("options-general.php?page=wireservice&settings-updated=true"),
     );
     exit();
+  }
+
+  /**
+   * Handle AJAX request to fetch the publication record from the PDS.
+   *
+   * @return void
+   */
+  public function handle_get_publication_record(): void
+  {
+    if (!current_user_can("manage_options")) {
+      wp_send_json_error("Unauthorized.", 403);
+    }
+
+    check_ajax_referer("wireservice_records", "nonce");
+
+    $pub_uri = $this->publication->get_at_uri();
+
+    if (empty($pub_uri)) {
+      wp_send_json_error("No publication record exists.");
+    }
+
+    $rkey = AtUri::get_rkey($pub_uri);
+    $result = $this->api->get_record("site.standard.publication", $rkey);
+
+    if (is_wp_error($result)) {
+      wp_send_json_error($result->get_error_message());
+    }
+
+    wp_send_json_success($result);
+  }
+
+  /**
+   * Handle AJAX request to list document records from the PDS.
+   *
+   * @return void
+   */
+  public function handle_list_document_records(): void
+  {
+    if (!current_user_can("manage_options")) {
+      wp_send_json_error("Unauthorized.", 403);
+    }
+
+    check_ajax_referer("wireservice_records", "nonce");
+
+    $pub_uri = $this->publication->get_at_uri();
+    $pub_data = $this->publication->get_publication_data();
+    $pub_url = rtrim($pub_data["url"] ?? "", "/");
+
+    $cursor = isset($_POST["cursor"])
+      ? sanitize_text_field(wp_unslash($_POST["cursor"]))
+      : null;
+
+    $result = $this->api->list_records(
+      "site.standard.document",
+      50,
+      $cursor ?: null,
+    );
+
+    if (is_wp_error($result)) {
+      wp_send_json_error($result->get_error_message());
+    }
+
+    $result["records"] = array_values(array_filter(
+      $result["records"] ?? [],
+      function (array $record) use ($pub_uri, $pub_url): bool {
+        $site = $record["value"]["site"] ?? "";
+        return $site === $pub_uri || rtrim($site, "/") === $pub_url;
+      },
+    ));
+
+    wp_send_json_success($result);
   }
 }

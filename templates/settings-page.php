@@ -42,6 +42,21 @@ defined('ABSPATH') || exit;
 <div class="wrap">
     <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
 
+    <?php $active_tab = isset($_GET["tab"]) ? sanitize_key($_GET["tab"]) : "settings"; ?>
+    <nav class="nav-tab-wrapper">
+        <a href="<?php echo esc_url(admin_url("options-general.php?page=wireservice&tab=settings")); ?>"
+           class="nav-tab <?php echo $active_tab === "settings" ? "nav-tab-active" : ""; ?>">
+            <?php esc_html_e("Settings", "wireservice"); ?>
+        </a>
+        <?php if ($is_connected && $pub_uri): ?>
+        <a href="<?php echo esc_url(admin_url("options-general.php?page=wireservice&tab=records")); ?>"
+           class="nav-tab <?php echo $active_tab === "records" ? "nav-tab-active" : ""; ?>">
+            <?php esc_html_e("Records", "wireservice"); ?>
+        </a>
+        <?php endif; ?>
+    </nav>
+
+    <?php if ($active_tab === "settings"): ?>
     <div class="wireservice-settings">
         <h2><?php esc_html_e("AT Protocol Connection", "wireservice"); ?></h2>
 
@@ -426,6 +441,9 @@ defined('ABSPATH') || exit;
             </button>
         </form>
     </div>
+    <?php elseif ($active_tab === "records"): ?>
+    <?php include WIRESERVICE_PLUGIN_DIR . "templates/records-page.php"; ?>
+    <?php endif; ?>
 </div>
 <style>
     .wireservice-settings {
@@ -514,5 +532,58 @@ defined('ABSPATH') || exit;
         cursor: pointer;
         color: #d63638;
         font-weight: 500;
+    }
+    .wireservice-records {
+        max-width: 800px;
+    }
+    .wireservice-record-table {
+        border-collapse: collapse;
+    }
+    .wireservice-record-table th {
+        width: 160px;
+        text-align: left;
+        padding: 8px 12px;
+        vertical-align: top;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .wireservice-record-table td {
+        padding: 8px 12px;
+        word-break: break-all;
+    }
+    .wireservice-record-table code {
+        font-size: 12px;
+        background: #f0f0f1;
+        padding: 2px 6px;
+        border-radius: 3px;
+    }
+    .wireservice-document-card {
+        background: #fff;
+        border: 1px solid #c3c4c7;
+        border-radius: 4px;
+        margin-bottom: 16px;
+    }
+    .wireservice-document-card-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f0f0f1;
+    }
+    .wireservice-document-card-header h3 {
+        margin: 0;
+        font-size: 14px;
+    }
+    .wireservice-document-card-body {
+        padding: 0;
+    }
+    .wireservice-document-card-body .wireservice-record-table {
+        border: none;
+    }
+    .wireservice-color-swatch {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        border: 1px solid #ddd;
+        vertical-align: middle;
+        margin-right: 4px;
     }
 </style>
