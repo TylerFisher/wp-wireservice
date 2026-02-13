@@ -1,64 +1,76 @@
-(function ($) {
+(function () {
   "use strict";
 
+  function escapeHtml(str) {
+    var div = document.createElement("div");
+    div.textContent = str || "";
+    return div.innerHTML;
+  }
+
   function toggleCustomField(selectId, fieldId, currentValueId) {
-    var $select = $("#" + selectId);
-    var $field = $("#" + fieldId);
-    var $currentValue = $("#" + currentValueId);
-    var $previewText = $currentValue.find(".wireservice-preview-text");
+    var select = document.getElementById(selectId);
+    var field = document.getElementById(fieldId);
+    var currentValue = document.getElementById(currentValueId);
+    var previewText = currentValue
+      ? currentValue.querySelector(".wireservice-preview-text")
+      : null;
 
     function update() {
-      var selected = $select.find("option:selected");
-      var preview = selected.attr("data-value") || "";
+      var selected = select.options[select.selectedIndex];
+      var preview = selected.getAttribute("data-value") || "";
 
-      if ($select.val() === "custom") {
-        $field.show();
-        $currentValue.hide();
+      if (select.value === "custom") {
+        field.style.display = "";
+        if (currentValue) currentValue.style.display = "none";
       } else {
-        $field.hide();
-        $currentValue.show();
-        if ($previewText.length) {
+        field.style.display = "none";
+        if (currentValue) currentValue.style.display = "";
+        if (previewText) {
           var truncated =
             preview.length > 100
               ? preview.substring(0, 100) + "..."
               : preview;
-          $previewText.text(truncated || "—");
+          previewText.textContent = truncated || "\u2014";
         }
       }
     }
 
-    $select.on("change", update);
+    select.addEventListener("change", update);
     update();
   }
 
   function initIconField() {
-    var $select = $("#wireservice_pub_icon_source");
-    var $customField = $("#wireservice-pub-custom-icon-field");
-    var $preview = $("#wireservice-pub-icon-preview");
-    var $uploadBtn = $("#wireservice-pub-icon-upload");
-    var $removeBtn = $("#wireservice-pub-icon-remove");
-    var $hiddenInput = $("#wireservice_pub_custom_icon_id");
-    var $customPreview = $("#wireservice-pub-custom-icon-preview");
+    var select = document.getElementById("wireservice_pub_icon_source");
+    var customField = document.getElementById(
+      "wireservice-pub-custom-icon-field"
+    );
+    var preview = document.getElementById("wireservice-pub-icon-preview");
+    var uploadBtn = document.getElementById("wireservice-pub-icon-upload");
+    var removeBtn = document.getElementById("wireservice-pub-icon-remove");
+    var hiddenInput = document.getElementById("wireservice_pub_custom_icon_id");
+    var customPreview = document.getElementById(
+      "wireservice-pub-custom-icon-preview"
+    );
     var frame;
 
     function updateVisibility() {
-      var val = $select.val();
+      var val = select.value;
       if (val === "custom") {
-        $customField.show();
-        $preview.hide();
+        customField.style.display = "";
+        preview.style.display = "none";
       } else if (val === "none") {
-        $customField.hide();
-        $preview.hide();
+        customField.style.display = "none";
+        preview.style.display = "none";
       } else {
-        $customField.hide();
-        $preview.show();
+        customField.style.display = "none";
+        preview.style.display = "";
       }
     }
 
-    $select.on("change", updateVisibility);
+    select.addEventListener("change", updateVisibility);
     updateVisibility();
 
-    $uploadBtn.on("click", function (e) {
+    uploadBtn.addEventListener("click", function (e) {
       e.preventDefault();
 
       if (frame) {
@@ -75,57 +87,75 @@
 
       frame.on("select", function () {
         var attachment = frame.state().get("selection").first().toJSON();
-        $hiddenInput.val(attachment.id);
+        hiddenInput.value = attachment.id;
         var thumbUrl =
           attachment.sizes && attachment.sizes.thumbnail
             ? attachment.sizes.thumbnail.url
             : attachment.url;
-        $customPreview.html(
+        customPreview.innerHTML =
           '<img src="' +
-            thumbUrl +
-            '" alt="" style="width: 64px; height: 64px; object-fit: cover; border-radius: 4px;">'
-        );
-        $removeBtn.show();
+          thumbUrl +
+          '" alt="" style="width: 64px; height: 64px; object-fit: cover; border-radius: 4px;">';
+        removeBtn.style.display = "";
       });
 
       frame.open();
     });
 
-    $removeBtn.on("click", function (e) {
+    removeBtn.addEventListener("click", function (e) {
       e.preventDefault();
-      $hiddenInput.val("");
-      $customPreview.html("");
-      $removeBtn.hide();
+      hiddenInput.value = "";
+      customPreview.innerHTML = "";
+      removeBtn.style.display = "none";
+    });
+  }
+
+  function ajaxPost(url, data) {
+    var formData = new FormData();
+    for (var key in data) {
+      if (Array.isArray(data[key])) {
+        for (var i = 0; i < data[key].length; i++) {
+          formData.append(key + "[]", data[key][i]);
+        }
+      } else {
+        formData.append(key, data[key]);
+      }
+    }
+    return fetch(url, { method: "POST", body: formData }).then(function (res) {
+      return res.json();
     });
   }
 
   function initBackfill() {
-    var $button = $("#wireservice-backfill-start");
-    var $progress = $("#wireservice-backfill-progress");
-    var $fill = $progress.find(".wireservice-progress-bar-fill");
-    var $status = $("#wireservice-backfill-status");
-    var $results = $("#wireservice-backfill-results");
+    var button = document.getElementById("wireservice-backfill-start");
+    var progress = document.getElementById("wireservice-backfill-progress");
+    var fill = progress
+      ? progress.querySelector(".wireservice-progress-bar-fill")
+      : null;
+    var status = document.getElementById("wireservice-backfill-status");
+    var results = document.getElementById("wireservice-backfill-results");
     var batchSize = 5;
 
-    if (!$button.length) {
+    if (!button) {
       return;
     }
 
-    $button.on("click", function () {
-      $button.prop("disabled", true);
-      $progress.show();
-      $results.hide().empty();
-      $fill.css("width", "0%");
-      $status.text("Counting posts...");
+    button.addEventListener("click", function () {
+      button.disabled = true;
+      progress.style.display = "";
+      results.style.display = "none";
+      results.innerHTML = "";
+      fill.style.width = "0%";
+      status.textContent = "Counting posts...";
 
-      $.post(wireserviceBackfill.ajaxUrl, {
+      ajaxPost(wireserviceBackfill.ajaxUrl, {
         action: "wireservice_backfill_count",
         nonce: wireserviceBackfill.nonce,
       })
-        .done(function (response) {
+        .then(function (response) {
           if (!response.success) {
-            $status.text("Failed to count posts.");
-            $button.prop("disabled", false);
+            status.textContent = "Failed to count posts.";
+            button.disabled = false;
             return;
           }
 
@@ -133,9 +163,9 @@
           var total = postIds.length;
 
           if (total === 0) {
-            $status.text("All posts are already synced.");
-            $progress.hide();
-            $button.prop("disabled", false);
+            status.textContent = "All posts are already synced.";
+            progress.style.display = "none";
+            button.disabled = false;
             return;
           }
 
@@ -143,7 +173,6 @@
           var succeeded = 0;
           var errors = [];
 
-          // Chunk post IDs into batches.
           var batches = [];
           for (var i = 0; i < postIds.length; i += batchSize) {
             batches.push(postIds.slice(i, i + batchSize));
@@ -151,12 +180,10 @@
 
           function processBatch(index) {
             if (index >= batches.length) {
-              // Done.
-              var pct = "100%";
-              $fill.css("width", pct);
+              fill.style.width = "100%";
 
               var summary = succeeded + " of " + total + " posts synced.";
-              $status.text(summary);
+              status.textContent = summary;
 
               if (errors.length > 0) {
                 var html =
@@ -166,29 +193,29 @@
                 for (var e = 0; e < errors.length; e++) {
                   html +=
                     "<li><strong>" +
-                    $("<span>").text(errors[e].title).html() +
+                    escapeHtml(errors[e].title) +
                     "</strong>: " +
-                    $("<span>").text(errors[e].error).html() +
+                    escapeHtml(errors[e].error) +
                     "</li>";
                 }
                 html += "</ul></details>";
-                $results.html(html).show();
+                results.innerHTML = html;
+                results.style.display = "";
               }
 
-              $button.prop("disabled", false);
+              button.disabled = false;
               return;
             }
 
-            $status.text(
-              "Syncing posts... (" + processed + " of " + total + ")"
-            );
+            status.textContent =
+              "Syncing posts... (" + processed + " of " + total + ")";
 
-            $.post(wireserviceBackfill.ajaxUrl, {
+            ajaxPost(wireserviceBackfill.ajaxUrl, {
               action: "wireservice_backfill_batch",
               nonce: wireserviceBackfill.nonce,
               post_ids: batches[index],
             })
-              .done(function (response) {
+              .then(function (response) {
                 if (response.success && response.data.results) {
                   for (var r = 0; r < response.data.results.length; r++) {
                     var result = response.data.results[r];
@@ -200,7 +227,6 @@
                     }
                   }
                 } else {
-                  // Count the entire batch as failed.
                   processed += batches[index].length;
                   for (var f = 0; f < batches[index].length; f++) {
                     errors.push({
@@ -210,12 +236,11 @@
                   }
                 }
 
-                var pct = Math.round((processed / total) * 100) + "%";
-                $fill.css("width", pct);
-
+                fill.style.width =
+                  Math.round((processed / total) * 100) + "%";
                 processBatch(index + 1);
               })
-              .fail(function () {
+              .catch(function () {
                 processed += batches[index].length;
                 for (var f = 0; f < batches[index].length; f++) {
                   errors.push({
@@ -224,23 +249,22 @@
                   });
                 }
 
-                var pct = Math.round((processed / total) * 100) + "%";
-                $fill.css("width", pct);
-
+                fill.style.width =
+                  Math.round((processed / total) * 100) + "%";
                 processBatch(index + 1);
               });
           }
 
           processBatch(0);
         })
-        .fail(function () {
-          $status.text("Failed to start backfill.");
-          $button.prop("disabled", false);
+        .catch(function () {
+          status.textContent = "Failed to start backfill.";
+          button.disabled = false;
         });
     });
   }
 
-  $(document).ready(function () {
+  document.addEventListener("DOMContentLoaded", function () {
     toggleCustomField(
       "wireservice_pub_name_source",
       "wireservice-pub-custom-name-field",
@@ -252,13 +276,10 @@
       "wireservice-pub-desc-current-value"
     );
 
-    // Initialize icon source toggle and media picker.
     initIconField();
 
-    // Initialize color pickers.
-    $(".wireservice-color-picker").wpColorPicker();
+    jQuery(".wireservice-color-picker").wpColorPicker();
 
-    // Initialize backfill.
     initBackfill();
   });
-})(jQuery);
+})();

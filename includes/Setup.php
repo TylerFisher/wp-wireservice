@@ -281,7 +281,7 @@ class Setup
     wp_enqueue_script(
       "wireservice-meta-box",
       WIRESERVICE_PLUGIN_URL . "assets/js/meta-box.js",
-      ["jquery"],
+      [],
       WIRESERVICE_VERSION,
       true,
     );

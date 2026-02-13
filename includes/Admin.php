@@ -82,7 +82,7 @@ class Admin
     wp_enqueue_script(
       "wireservice-settings",
       WIRESERVICE_PLUGIN_URL . "assets/js/settings.js",
-      ["jquery", "wp-color-picker"],
+      ["wp-color-picker"],
       WIRESERVICE_VERSION,
       true,
     );
@@ -98,7 +98,7 @@ class Admin
       wp_enqueue_script(
         "wireservice-records",
         WIRESERVICE_PLUGIN_URL . "assets/js/records.js",
-        ["jquery"],
+        [],
         WIRESERVICE_VERSION,
         true,
       );

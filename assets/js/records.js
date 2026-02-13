@@ -1,5 +1,11 @@
-(function ($) {
+(function () {
   "use strict";
+
+  function escapeHtml(str) {
+    var div = document.createElement("div");
+    div.textContent = str || "";
+    return div.innerHTML;
+  }
 
   function formatDate(isoString) {
     if (!isoString) return "\u2014";
@@ -13,39 +19,35 @@
     });
   }
 
-  function esc(str) {
-    return $("<span>").text(str || "").html();
-  }
-
   function fieldRow(label, value) {
-    return "<tr><th>" + esc(label) + "</th><td>" + value + "</td></tr>";
+    return "<tr><th>" + escapeHtml(label) + "</th><td>" + value + "</td></tr>";
   }
 
   function renderPublication(record) {
     var val = record.value;
     var html = '<table class="widefat wireservice-record-table">';
     html += "<tbody>";
-    html += fieldRow("AT-URI", "<code>" + esc(record.uri) + "</code>");
-    html += fieldRow("CID", "<code>" + esc(record.cid) + "</code>");
-    html += fieldRow("Name", esc(val.name));
+    html += fieldRow("AT-URI", "<code>" + escapeHtml(record.uri) + "</code>");
+    html += fieldRow("CID", "<code>" + escapeHtml(record.cid) + "</code>");
+    html += fieldRow("Name", escapeHtml(val.name));
     html += fieldRow(
       "URL",
       '<a href="' +
-        esc(val.url) +
+        escapeHtml(val.url) +
         '" target="_blank">' +
-        esc(val.url) +
+        escapeHtml(val.url) +
         "</a>"
     );
 
     if (val.description) {
-      html += fieldRow("Description", esc(val.description));
+      html += fieldRow("Description", escapeHtml(val.description));
     }
 
     if (val.icon) {
       html += fieldRow(
         "Icon",
         "<code>blob</code> (" +
-          esc(val.icon.mimeType || "unknown type") +
+          escapeHtml(val.icon.mimeType || "unknown type") +
           ")"
       );
     }
@@ -83,15 +85,15 @@
     var val = record.value;
     var html = '<div class="wireservice-document-card">';
     html += '<div class="wireservice-document-card-header">';
-    html += "<h3>" + esc(val.title) + "</h3>";
+    html += "<h3>" + escapeHtml(val.title) + "</h3>";
     html += "</div>";
     html += '<div class="wireservice-document-card-body">';
     html += '<table class="widefat wireservice-record-table">';
     html += "<tbody>";
-    html += fieldRow("AT-URI", "<code>" + esc(record.uri) + "</code>");
+    html += fieldRow("AT-URI", "<code>" + escapeHtml(record.uri) + "</code>");
 
     if (val.path) {
-      html += fieldRow("Path", esc(val.path));
+      html += fieldRow("Path", escapeHtml(val.path));
     }
 
     html += fieldRow("Published", formatDate(val.publishedAt));
@@ -105,13 +107,13 @@
         val.description.length > 200
           ? val.description.substring(0, 200) + "..."
           : val.description;
-      html += fieldRow("Description", esc(desc));
+      html += fieldRow("Description", escapeHtml(desc));
     }
 
     if (val.tags && val.tags.length > 0) {
       var tags = val.tags
         .map(function (t) {
-          return esc(t);
+          return escapeHtml(t);
         })
         .join(", ");
       html += fieldRow("Tags", tags);
@@ -121,7 +123,7 @@
       html += fieldRow(
         "Cover Image",
         "<code>blob</code> (" +
-          esc(val.coverImage.mimeType || "unknown type") +
+          escapeHtml(val.coverImage.mimeType || "unknown type") +
           ")"
       );
     }
@@ -129,7 +131,7 @@
     if (val.textContent) {
       html += fieldRow(
         "Text Content",
-        esc(val.textContent.substring(0, 100)) +
+        escapeHtml(val.textContent.substring(0, 100)) +
           (val.textContent.length > 100 ? "..." : "")
       );
     }
@@ -139,34 +141,43 @@
     return html;
   }
 
-  function loadPublication() {
-    var $loading = $("#wireservice-publication-loading");
-    var $error = $("#wireservice-publication-error");
-    var $data = $("#wireservice-publication-data");
+  function ajaxPost(url, data) {
+    var formData = new FormData();
+    for (var key in data) {
+      formData.append(key, data[key]);
+    }
+    return fetch(url, { method: "POST", body: formData }).then(function (res) {
+      return res.json();
+    });
+  }
 
-    $.post(wireserviceRecords.ajaxUrl, {
+  function loadPublication() {
+    var loading = document.getElementById("wireservice-publication-loading");
+    var error = document.getElementById("wireservice-publication-error");
+    var data = document.getElementById("wireservice-publication-data");
+
+    ajaxPost(wireserviceRecords.ajaxUrl, {
       action: "wireservice_get_publication_record",
       nonce: wireserviceRecords.nonce,
     })
-      .done(function (response) {
-        $loading.hide();
+      .then(function (response) {
+        loading.style.display = "none";
         if (!response.success) {
-          $error
-            .html(
-              "<p class='wireservice-error'>" + esc(response.data) + "</p>"
-            )
-            .show();
+          error.innerHTML =
+            "<p class='wireservice-error'>" +
+            escapeHtml(response.data) +
+            "</p>";
+          error.style.display = "";
           return;
         }
-        $data.html(renderPublication(response.data)).show();
+        data.innerHTML = renderPublication(response.data);
+        data.style.display = "";
       })
-      .fail(function () {
-        $loading.hide();
-        $error
-          .html(
-            "<p class='wireservice-error'>Failed to fetch publication record.</p>"
-          )
-          .show();
+      .catch(function () {
+        loading.style.display = "none";
+        error.innerHTML =
+          "<p class='wireservice-error'>Failed to fetch publication record.</p>";
+        error.style.display = "";
       });
   }
 
@@ -174,16 +185,18 @@
   var totalLoaded = 0;
 
   function loadDocuments(cursor) {
-    var $loading = $("#wireservice-documents-loading");
-    var $error = $("#wireservice-documents-error");
-    var $list = $("#wireservice-documents-list");
-    var $pagination = $("#wireservice-documents-pagination");
-    var $loadMore = $("#wireservice-documents-load-more");
+    var loading = document.getElementById("wireservice-documents-loading");
+    var error = document.getElementById("wireservice-documents-error");
+    var list = document.getElementById("wireservice-documents-list");
+    var pagination = document.getElementById(
+      "wireservice-documents-pagination"
+    );
+    var loadMore = document.getElementById("wireservice-documents-load-more");
 
     if (!cursor) {
-      $loading.show();
+      loading.style.display = "";
     }
-    $loadMore.prop("disabled", true);
+    loadMore.disabled = true;
 
     var postData = {
       action: "wireservice_list_document_records",
@@ -194,15 +207,15 @@
       postData.cursor = cursor;
     }
 
-    $.post(wireserviceRecords.ajaxUrl, postData)
-      .done(function (response) {
-        $loading.hide();
+    ajaxPost(wireserviceRecords.ajaxUrl, postData)
+      .then(function (response) {
+        loading.style.display = "none";
         if (!response.success) {
-          $error
-            .html(
-              "<p class='wireservice-error'>" + esc(response.data) + "</p>"
-            )
-            .show();
+          error.innerHTML =
+            "<p class='wireservice-error'>" +
+            escapeHtml(response.data) +
+            "</p>";
+          error.style.display = "";
           return;
         }
 
@@ -211,7 +224,8 @@
         totalLoaded += records.length;
 
         if (records.length === 0 && totalLoaded === 0) {
-          $list.html("<p>No document records found on this PDS.</p>").show();
+          list.innerHTML = "<p>No document records found on this PDS.</p>";
+          list.style.display = "";
           return;
         }
 
@@ -220,48 +234,50 @@
           html += renderDocumentCard(records[i]);
         }
 
-        $list.append(html).show();
+        list.insertAdjacentHTML("beforeend", html);
+        list.style.display = "";
 
-        var $count = $("#wireservice-documents-count");
-        if ($count.length === 0) {
-          $list.before(
+        var count = document.getElementById("wireservice-documents-count");
+        if (!count) {
+          list.insertAdjacentHTML(
+            "beforebegin",
             '<p id="wireservice-documents-count">' +
               totalLoaded +
               " records loaded</p>"
           );
         } else {
-          $count.text(totalLoaded + " records loaded");
+          count.textContent = totalLoaded + " records loaded";
         }
 
         if (documentCursor) {
-          $pagination.show();
-          $loadMore.prop("disabled", false);
+          pagination.style.display = "";
+          loadMore.disabled = false;
         } else {
-          $pagination.hide();
+          pagination.style.display = "none";
         }
       })
-      .fail(function () {
-        $loading.hide();
-        $error
-          .html(
-            "<p class='wireservice-error'>Failed to fetch document records.</p>"
-          )
-          .show();
+      .catch(function () {
+        loading.style.display = "none";
+        error.innerHTML =
+          "<p class='wireservice-error'>Failed to fetch document records.</p>";
+        error.style.display = "";
       });
   }
 
-  $(document).ready(function () {
-    if ($("#wireservice-records-publication").length === 0) {
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!document.getElementById("wireservice-records-publication")) {
       return;
     }
 
     loadPublication();
     loadDocuments(null);
 
-    $("#wireservice-documents-load-more").on("click", function () {
-      if (documentCursor) {
-        loadDocuments(documentCursor);
-      }
-    });
+    document
+      .getElementById("wireservice-documents-load-more")
+      .addEventListener("click", function () {
+        if (documentCursor) {
+          loadDocuments(documentCursor);
+        }
+      });
   });
-})(jQuery);
+})();
