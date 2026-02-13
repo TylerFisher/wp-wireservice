@@ -9,6 +9,8 @@ declare(strict_types=1);
  * Author URI: https://example.com
  * License: AGPL-3.0+
  * License URI: https://www.gnu.org/licenses/agpl-3.0.html
+ * Requires at least: 6.7
+ * Requires PHP: 8.4
  * Text Domain: wireservice
  * Domain Path: /languages
  */
@@ -16,6 +18,28 @@ declare(strict_types=1);
 // If this file is called directly, abort.
 if (!defined("WPINC")) {
   die();
+}
+
+// Minimum WordPress version.
+define("WIRESERVICE_MIN_WP_VERSION", "6.7");
+
+// Check WordPress version.
+global $wp_version;
+if (version_compare($wp_version, WIRESERVICE_MIN_WP_VERSION, "<")) {
+  add_action("admin_notices", function () {
+    printf(
+      '<div class="notice notice-error"><p>%s</p></div>',
+      sprintf(
+        /* translators: %s: minimum WordPress version */
+        esc_html__(
+          "Wireservice requires WordPress %s or higher.",
+          "wireservice",
+        ),
+        WIRESERVICE_MIN_WP_VERSION,
+      ),
+    );
+  });
+  return;
 }
 
 // Plugin version.
