@@ -363,6 +363,30 @@ defined('ABSPATH') || exit;
             </table>
             <?php submit_button(__("Save Document Settings", "wireservice")); ?>
         </form>
+
+        <?php if ($pub_uri): ?>
+        <hr>
+
+        <h2><?php esc_html_e("Backfill Documents", "wireservice"); ?></h2>
+        <p class="description"><?php esc_html_e("Sync all existing published posts that haven't been published to AT Protocol yet.", "wireservice"); ?></p>
+
+        <div id="wireservice-backfill">
+            <p>
+                <button type="button" class="button button-secondary" id="wireservice-backfill-start">
+                    <?php esc_html_e("Backfill Posts", "wireservice"); ?>
+                </button>
+            </p>
+
+            <div id="wireservice-backfill-progress" style="display: none;">
+                <div class="wireservice-progress-bar">
+                    <div class="wireservice-progress-bar-fill" style="width: 0%;"></div>
+                </div>
+                <p id="wireservice-backfill-status"></p>
+            </div>
+
+            <div id="wireservice-backfill-results" style="display: none;"></div>
+        </div>
+        <?php endif; ?>
         <?php endif; ?>
 
         <hr>
@@ -469,5 +493,26 @@ defined('ABSPATH') || exit;
     }
     .wireservice-advanced-settings summary:hover {
         color: #1d2327;
+    }
+    .wireservice-progress-bar {
+        width: 100%;
+        height: 20px;
+        background: #f0f0f1;
+        border-radius: 3px;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+    .wireservice-progress-bar-fill {
+        height: 100%;
+        background: #2271b1;
+        transition: width 0.3s ease;
+    }
+    .wireservice-backfill-errors {
+        margin-top: 10px;
+    }
+    .wireservice-backfill-errors summary {
+        cursor: pointer;
+        color: #d63638;
+        font-weight: 500;
     }
 </style>

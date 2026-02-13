@@ -33,8 +33,8 @@ Your WordPress site is represented as a `site.standard.publication` record on AT
 - **Name** &mdash; from WordPress site title, Yoast SEO, or a custom value
 - **Description** &mdash; from WordPress tagline, Yoast SEO, or a custom value
 - **Icon** &mdash; from WordPress site icon or a custom upload
-- **Theme colors** &mdash; background, foreground, accent, and accent foreground
-- **Discoverability** &mdash; opt in or out of discovery feeds
+- **Theme colors** &mdash; background, foreground, accent, and accent foreground. NOTE: these are used by other ATProto platforms to style your content, not on your WordPress site.
+- **Discoverability** &mdash; opt in or out of discovery feeds. NOTE: these are used by other ATProto platforms to show your publication in algorithmic feeds, not on your WordPress site.
 
 The plugin also serves a `.well-known/site.standard.publication` endpoint that returns the AT-URI of your publication record.
 

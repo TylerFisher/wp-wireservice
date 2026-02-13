@@ -40,6 +40,7 @@ class Setup
       $this->connections_manager,
       $this->api,
       $this->publication,
+      $this->document,
     );
     $admin->init();
 

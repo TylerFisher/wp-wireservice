@@ -99,6 +99,147 @@
     });
   }
 
+  function initBackfill() {
+    var $button = $("#wireservice-backfill-start");
+    var $progress = $("#wireservice-backfill-progress");
+    var $fill = $progress.find(".wireservice-progress-bar-fill");
+    var $status = $("#wireservice-backfill-status");
+    var $results = $("#wireservice-backfill-results");
+    var batchSize = 5;
+
+    if (!$button.length) {
+      return;
+    }
+
+    $button.on("click", function () {
+      $button.prop("disabled", true);
+      $progress.show();
+      $results.hide().empty();
+      $fill.css("width", "0%");
+      $status.text("Counting posts...");
+
+      $.post(wireserviceBackfill.ajaxUrl, {
+        action: "wireservice_backfill_count",
+        nonce: wireserviceBackfill.nonce,
+      })
+        .done(function (response) {
+          if (!response.success) {
+            $status.text("Failed to count posts.");
+            $button.prop("disabled", false);
+            return;
+          }
+
+          var postIds = response.data.post_ids;
+          var total = postIds.length;
+
+          if (total === 0) {
+            $status.text("All posts are already synced.");
+            $progress.hide();
+            $button.prop("disabled", false);
+            return;
+          }
+
+          var processed = 0;
+          var succeeded = 0;
+          var errors = [];
+
+          // Chunk post IDs into batches.
+          var batches = [];
+          for (var i = 0; i < postIds.length; i += batchSize) {
+            batches.push(postIds.slice(i, i + batchSize));
+          }
+
+          function processBatch(index) {
+            if (index >= batches.length) {
+              // Done.
+              var pct = "100%";
+              $fill.css("width", pct);
+
+              var summary = succeeded + " of " + total + " posts synced.";
+              $status.text(summary);
+
+              if (errors.length > 0) {
+                var html =
+                  '<details class="wireservice-backfill-errors"><summary>' +
+                  errors.length +
+                  " failed</summary><ul>";
+                for (var e = 0; e < errors.length; e++) {
+                  html +=
+                    "<li><strong>" +
+                    $("<span>").text(errors[e].title).html() +
+                    "</strong>: " +
+                    $("<span>").text(errors[e].error).html() +
+                    "</li>";
+                }
+                html += "</ul></details>";
+                $results.html(html).show();
+              }
+
+              $button.prop("disabled", false);
+              return;
+            }
+
+            $status.text(
+              "Syncing posts... (" + processed + " of " + total + ")"
+            );
+
+            $.post(wireserviceBackfill.ajaxUrl, {
+              action: "wireservice_backfill_batch",
+              nonce: wireserviceBackfill.nonce,
+              post_ids: batches[index],
+            })
+              .done(function (response) {
+                if (response.success && response.data.results) {
+                  for (var r = 0; r < response.data.results.length; r++) {
+                    var result = response.data.results[r];
+                    processed++;
+                    if (result.success) {
+                      succeeded++;
+                    } else {
+                      errors.push(result);
+                    }
+                  }
+                } else {
+                  // Count the entire batch as failed.
+                  processed += batches[index].length;
+                  for (var f = 0; f < batches[index].length; f++) {
+                    errors.push({
+                      title: "Post #" + batches[index][f],
+                      error: "Batch request failed.",
+                    });
+                  }
+                }
+
+                var pct = Math.round((processed / total) * 100) + "%";
+                $fill.css("width", pct);
+
+                processBatch(index + 1);
+              })
+              .fail(function () {
+                processed += batches[index].length;
+                for (var f = 0; f < batches[index].length; f++) {
+                  errors.push({
+                    title: "Post #" + batches[index][f],
+                    error: "Request failed.",
+                  });
+                }
+
+                var pct = Math.round((processed / total) * 100) + "%";
+                $fill.css("width", pct);
+
+                processBatch(index + 1);
+              });
+          }
+
+          processBatch(0);
+        })
+        .fail(function () {
+          $status.text("Failed to start backfill.");
+          $button.prop("disabled", false);
+        });
+    });
+  }
+
   $(document).ready(function () {
     toggleCustomField(
       "wireservice_pub_name_source",
@@ -116,5 +257,8 @@
 
     // Initialize color pickers.
     $(".wireservice-color-picker").wpColorPicker();
+
+    // Initialize backfill.
+    initBackfill();
   });
 })(jQuery);

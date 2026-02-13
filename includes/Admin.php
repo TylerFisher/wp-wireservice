@@ -17,6 +17,7 @@ class Admin
     private ConnectionsManager $connections_manager,
     private API $api,
     private Publication $publication,
+    private Document $document,
   ) {}
 
   /**
@@ -40,6 +41,14 @@ class Admin
     add_action("admin_post_wireservice_save_doc_settings", [
       $this,
       "handle_save_doc_settings",
+    ]);
+    add_action("wp_ajax_wireservice_backfill_count", [
+      $this,
+      "handle_backfill_count",
+    ]);
+    add_action("wp_ajax_wireservice_backfill_batch", [
+      $this,
+      "handle_backfill_batch",
     ]);
     add_filter("plugin_action_links_wireservice/wireservice.php", [
       $this,
@@ -69,6 +78,11 @@ class Admin
       WIRESERVICE_VERSION,
       true,
     );
+
+    wp_localize_script("wireservice-settings", "wireserviceBackfill", [
+      "ajaxUrl" => admin_url("admin-ajax.php"),
+      "nonce" => wp_create_nonce("wireservice_backfill"),
+    ]);
   }
 
   /**
@@ -626,6 +640,98 @@ class Admin
       "custom" => $custom_icon_id,
       default => 0,
     };
+  }
+
+  /**
+   * Handle AJAX request to count unsynced posts for backfill.
+   *
+   * @return void
+   */
+  public function handle_backfill_count(): void
+  {
+    if (!current_user_can("manage_options")) {
+      wp_send_json_error("Unauthorized.", 403);
+    }
+
+    check_ajax_referer("wireservice_backfill", "nonce");
+
+    $post_types = apply_filters("wireservice_syncable_post_types", [
+      "post",
+      "page",
+    ]);
+
+    $query = new \WP_Query([
+      "post_type" => $post_types,
+      "post_status" => "publish",
+      "posts_per_page" => -1,
+      "fields" => "ids",
+      "meta_query" => [
+        [
+          "key" => Document::META_KEY_URI,
+          "compare" => "NOT EXISTS",
+        ],
+      ],
+    ]);
+
+    wp_send_json_success([
+      "total" => $query->found_posts,
+      "post_ids" => $query->posts,
+    ]);
+  }
+
+  /**
+   * Handle AJAX request to sync a batch of posts for backfill.
+   *
+   * @return void
+   */
+  public function handle_backfill_batch(): void
+  {
+    if (!current_user_can("manage_options")) {
+      wp_send_json_error("Unauthorized.", 403);
+    }
+
+    check_ajax_referer("wireservice_backfill", "nonce");
+
+    $post_ids = isset($_POST["post_ids"])
+      ? array_map("absint", (array) $_POST["post_ids"])
+      : [];
+
+    if (empty($post_ids)) {
+      wp_send_json_error("No post IDs provided.");
+    }
+
+    $results = [];
+    foreach ($post_ids as $post_id) {
+      $post = get_post($post_id);
+
+      if (!$post || !$this->document->should_sync($post)) {
+        $results[] = [
+          "id" => $post_id,
+          "success" => false,
+          "error" => __("Post not eligible for sync.", "wireservice"),
+        ];
+        continue;
+      }
+
+      $response = $this->document->sync_to_atproto($post);
+
+      if (is_wp_error($response)) {
+        $results[] = [
+          "id" => $post_id,
+          "title" => get_the_title($post),
+          "success" => false,
+          "error" => $response->get_error_message(),
+        ];
+      } else {
+        $results[] = [
+          "id" => $post_id,
+          "title" => get_the_title($post),
+          "success" => true,
+        ];
+      }
+    }
+
+    wp_send_json_success(["results" => $results]);
   }
 
   /**
