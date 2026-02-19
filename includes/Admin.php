@@ -219,10 +219,14 @@ class Admin
 
     return [
       "name_source" => isset($value["name_source"])
-        ? sanitize_text_field($value["name_source"])
+        ? SourceOptions::validate_pub_name_key(
+          sanitize_text_field($value["name_source"]),
+        )
         : "wordpress_title",
       "description_source" => isset($value["description_source"])
-        ? sanitize_text_field($value["description_source"])
+        ? SourceOptions::validate_pub_desc_key(
+          sanitize_text_field($value["description_source"]),
+        )
         : "wordpress_tagline",
       "custom_name" => isset($value["custom_name"])
         ? sanitize_text_field($value["custom_name"])
@@ -231,7 +235,9 @@ class Admin
         ? sanitize_textarea_field($value["custom_description"])
         : "",
       "icon_source" => isset($value["icon_source"])
-        ? sanitize_text_field($value["icon_source"])
+        ? SourceOptions::validate_pub_icon_key(
+          sanitize_text_field($value["icon_source"]),
+        )
         : "none",
       "custom_icon_id" => isset($value["custom_icon_id"])
         ? absint($value["custom_icon_id"])
@@ -271,13 +277,19 @@ class Admin
         ? sanitize_text_field($value["enabled"])
         : "0",
       "title_source" => isset($value["title_source"])
-        ? sanitize_text_field($value["title_source"])
+        ? SourceOptions::validate_doc_title_key(
+          sanitize_text_field($value["title_source"]),
+        )
         : "wordpress_title",
       "description_source" => isset($value["description_source"])
-        ? sanitize_text_field($value["description_source"])
+        ? SourceOptions::validate_doc_desc_key(
+          sanitize_text_field($value["description_source"]),
+        )
         : "wordpress_excerpt",
       "image_source" => isset($value["image_source"])
-        ? sanitize_text_field($value["image_source"])
+        ? SourceOptions::validate_doc_image_key(
+          sanitize_text_field($value["image_source"]),
+        )
         : "wordpress_featured",
       "include_content" => isset($value["include_content"])
         ? sanitize_text_field($value["include_content"])
@@ -425,13 +437,17 @@ class Admin
     $pub = SourceOptions::get_pub_settings();
 
     $pub["name_source"] = isset($_POST["wireservice_pub_name_source"])
-      ? sanitize_text_field(wp_unslash($_POST["wireservice_pub_name_source"]))
+      ? SourceOptions::validate_pub_name_key(
+        sanitize_text_field(wp_unslash($_POST["wireservice_pub_name_source"])),
+      )
       : $pub["name_source"];
     $pub["description_source"] = isset(
       $_POST["wireservice_pub_description_source"],
     )
-      ? sanitize_text_field(
-        wp_unslash($_POST["wireservice_pub_description_source"]),
+      ? SourceOptions::validate_pub_desc_key(
+        sanitize_text_field(
+          wp_unslash($_POST["wireservice_pub_description_source"]),
+        ),
       )
       : $pub["description_source"];
 
@@ -447,8 +463,10 @@ class Admin
     }
 
     $pub["icon_source"] = isset($_POST["wireservice_pub_icon_source"])
-      ? sanitize_text_field(
-        wp_unslash($_POST["wireservice_pub_icon_source"]),
+      ? SourceOptions::validate_pub_icon_key(
+        sanitize_text_field(
+          wp_unslash($_POST["wireservice_pub_icon_source"]),
+        ),
       )
       : $pub["icon_source"];
     $pub["custom_icon_id"] = isset($_POST["wireservice_pub_custom_icon_id"])
@@ -676,6 +694,7 @@ class Admin
   {
     if (!current_user_can("manage_options")) {
       wp_send_json_error("Unauthorized.", 403);
+      return;
     }
 
     check_ajax_referer("wireservice_backfill", "nonce");
@@ -713,6 +732,7 @@ class Admin
   {
     if (!current_user_can("manage_options")) {
       wp_send_json_error("Unauthorized.", 403);
+      return;
     }
 
     check_ajax_referer("wireservice_backfill", "nonce");
@@ -782,20 +802,26 @@ class Admin
     $doc["enabled"] = isset($_POST["wireservice_doc_enabled"]) ? "1" : "0";
 
     if (isset($_POST["wireservice_doc_title_source"])) {
-      $doc["title_source"] = sanitize_text_field(
-        wp_unslash($_POST["wireservice_doc_title_source"]),
+      $doc["title_source"] = SourceOptions::validate_doc_title_key(
+        sanitize_text_field(
+          wp_unslash($_POST["wireservice_doc_title_source"]),
+        ),
       );
     }
 
     if (isset($_POST["wireservice_doc_description_source"])) {
-      $doc["description_source"] = sanitize_text_field(
-        wp_unslash($_POST["wireservice_doc_description_source"]),
+      $doc["description_source"] = SourceOptions::validate_doc_desc_key(
+        sanitize_text_field(
+          wp_unslash($_POST["wireservice_doc_description_source"]),
+        ),
       );
     }
 
     if (isset($_POST["wireservice_doc_image_source"])) {
-      $doc["image_source"] = sanitize_text_field(
-        wp_unslash($_POST["wireservice_doc_image_source"]),
+      $doc["image_source"] = SourceOptions::validate_doc_image_key(
+        sanitize_text_field(
+          wp_unslash($_POST["wireservice_doc_image_source"]),
+        ),
       );
     }
 
@@ -829,6 +855,7 @@ class Admin
   {
     if (!current_user_can("manage_options")) {
       wp_send_json_error("Unauthorized.", 403);
+      return;
     }
 
     check_ajax_referer("wireservice_records", "nonce");
@@ -858,6 +885,7 @@ class Admin
   {
     if (!current_user_can("manage_options")) {
       wp_send_json_error("Unauthorized.", 403);
+      return;
     }
 
     check_ajax_referer("wireservice_records", "nonce");

@@ -58,12 +58,12 @@
             attachment.sizes && attachment.sizes.thumbnail
               ? attachment.sizes.thumbnail.url
               : attachment.url;
-          document.getElementById(
-            "wireservice-custom-image-preview"
-          ).innerHTML =
-            '<img src="' +
-            thumbUrl +
-            '" style="max-width:150px;height:auto;display:block;margin-bottom:8px;" />';
+          var previewEl = document.getElementById("wireservice-custom-image-preview");
+          previewEl.innerHTML = "";
+          var img = document.createElement("img");
+          img.src = thumbUrl;
+          img.style.cssText = "max-width:150px;height:auto;display:block;margin-bottom:8px;";
+          previewEl.appendChild(img);
           document.getElementById("wireservice-remove-image").style.display =
             "";
         });

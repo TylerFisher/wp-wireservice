@@ -92,10 +92,12 @@
           attachment.sizes && attachment.sizes.thumbnail
             ? attachment.sizes.thumbnail.url
             : attachment.url;
-        customPreview.innerHTML =
-          '<img src="' +
-          thumbUrl +
-          '" alt="" style="width: 64px; height: 64px; object-fit: cover; border-radius: 4px;">';
+        customPreview.innerHTML = "";
+        var img = document.createElement("img");
+        img.src = thumbUrl;
+        img.alt = "";
+        img.style.cssText = "width: 64px; height: 64px; object-fit: cover; border-radius: 4px;";
+        customPreview.appendChild(img);
         removeBtn.style.display = "";
       });
 

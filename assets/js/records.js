@@ -7,6 +7,16 @@
     return div.innerHTML;
   }
 
+  function safeUrl(url) {
+    if (!url || typeof url !== "string") return "#";
+    return /^https?:\/\//i.test(url) ? url : "#";
+  }
+
+  function safeInt(val) {
+    var n = parseInt(val, 10);
+    return isFinite(n) ? n : 0;
+  }
+
   function formatDate(isoString) {
     if (!isoString) return "\u2014";
     var d = new Date(isoString);
@@ -33,7 +43,7 @@
     html += fieldRow(
       "URL",
       '<a href="' +
-        escapeHtml(val.url) +
+        escapeHtml(safeUrl(val.url)) +
         '" target="_blank">' +
         escapeHtml(val.url) +
         "</a>"
@@ -58,7 +68,7 @@
       for (var i = 0; i < colors.length; i++) {
         var c = theme[colors[i]];
         if (c) {
-          var rgb = "rgb(" + c.r + ", " + c.g + ", " + c.b + ")";
+          var rgb = "rgb(" + safeInt(c.r) + ", " + safeInt(c.g) + ", " + safeInt(c.b) + ")";
           html += fieldRow(
             "Theme: " + colors[i],
             '<span class="wireservice-color-swatch" style="background:' +

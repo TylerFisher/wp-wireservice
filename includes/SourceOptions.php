@@ -43,6 +43,157 @@ class SourceOptions
   ];
 
   /**
+   * All valid publication name source keys.
+   *
+   * @var string[]
+   */
+  private const VALID_PUB_NAME_KEYS = [
+    "wordpress_title",
+    "yoast_organization",
+    "yoast_website",
+    "custom",
+  ];
+
+  /**
+   * All valid publication description source keys.
+   *
+   * @var string[]
+   */
+  private const VALID_PUB_DESC_KEYS = [
+    "wordpress_tagline",
+    "yoast_homepage",
+    "custom",
+  ];
+
+  /**
+   * All valid publication icon source keys.
+   *
+   * @var string[]
+   */
+  private const VALID_PUB_ICON_KEYS = [
+    "none",
+    "wordpress_site_icon",
+    "custom",
+  ];
+
+  /**
+   * All valid document title source keys.
+   *
+   * @var string[]
+   */
+  private const VALID_DOC_TITLE_KEYS = [
+    "wordpress_title",
+    "yoast_title",
+    "yoast_social_title",
+    "yoast_x_title",
+    "custom",
+  ];
+
+  /**
+   * All valid document description source keys.
+   *
+   * @var string[]
+   */
+  private const VALID_DOC_DESC_KEYS = [
+    "wordpress_excerpt",
+    "yoast_description",
+    "yoast_social_description",
+    "yoast_x_description",
+    "custom",
+  ];
+
+  /**
+   * All valid document image source keys.
+   *
+   * @var string[]
+   */
+  private const VALID_DOC_IMAGE_KEYS = [
+    "none",
+    "wordpress_featured",
+    "yoast_social_image",
+    "yoast_x_image",
+    "custom",
+  ];
+
+  /**
+   * Validate a publication name source key, returning the default if invalid.
+   *
+   * @param string $key The source key to validate.
+   * @return string The validated key.
+   */
+  public static function validate_pub_name_key(string $key): string
+  {
+    return in_array($key, self::VALID_PUB_NAME_KEYS, true)
+      ? $key
+      : self::PUB_DEFAULTS["name_source"];
+  }
+
+  /**
+   * Validate a publication description source key, returning the default if invalid.
+   *
+   * @param string $key The source key to validate.
+   * @return string The validated key.
+   */
+  public static function validate_pub_desc_key(string $key): string
+  {
+    return in_array($key, self::VALID_PUB_DESC_KEYS, true)
+      ? $key
+      : self::PUB_DEFAULTS["description_source"];
+  }
+
+  /**
+   * Validate a publication icon source key, returning the default if invalid.
+   *
+   * @param string $key The source key to validate.
+   * @return string The validated key.
+   */
+  public static function validate_pub_icon_key(string $key): string
+  {
+    return in_array($key, self::VALID_PUB_ICON_KEYS, true)
+      ? $key
+      : self::PUB_DEFAULTS["icon_source"];
+  }
+
+  /**
+   * Validate a document title source key, returning the default if invalid.
+   *
+   * @param string $key The source key to validate.
+   * @return string The validated key.
+   */
+  public static function validate_doc_title_key(string $key): string
+  {
+    return in_array($key, self::VALID_DOC_TITLE_KEYS, true)
+      ? $key
+      : self::DOC_DEFAULTS["title_source"];
+  }
+
+  /**
+   * Validate a document description source key, returning the default if invalid.
+   *
+   * @param string $key The source key to validate.
+   * @return string The validated key.
+   */
+  public static function validate_doc_desc_key(string $key): string
+  {
+    return in_array($key, self::VALID_DOC_DESC_KEYS, true)
+      ? $key
+      : self::DOC_DEFAULTS["description_source"];
+  }
+
+  /**
+   * Validate a document image source key, returning the default if invalid.
+   *
+   * @param string $key The source key to validate.
+   * @return string The validated key.
+   */
+  public static function validate_doc_image_key(string $key): string
+  {
+    return in_array($key, self::VALID_DOC_IMAGE_KEYS, true)
+      ? $key
+      : self::DOC_DEFAULTS["image_source"];
+  }
+
+  /**
    * Get publication settings merged with defaults.
    *
    * @return array
