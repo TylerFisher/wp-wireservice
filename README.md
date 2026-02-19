@@ -53,6 +53,8 @@ Documents are created on publish, updated on edit, and deleted when a post is tr
 
 A `<link rel="site.standard.document">` tag is added to the `<head>` of each synced post for verification.
 
+Note that Wireservice does not have a content lexicon yet. This is in development.
+
 ### Per-Post Overrides
 
 A **Wireservice** meta box appears on the post editor, allowing per-post overrides for:

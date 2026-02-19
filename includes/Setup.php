@@ -55,6 +55,10 @@ class Setup
     add_action("template_redirect", [$this, "handle_well_known_request"]);
     add_filter("query_vars", [$this, "add_query_vars"]);
 
+    // Scheduled token refresh.
+    add_action("wireservice_refresh_token", [$this, "handle_scheduled_refresh"]);
+    $this->ensure_cron_scheduled();
+
     // Document sync hooks.
     // Use wp_after_insert_post (WP 5.6+) to ensure all meta (including Yoast) is saved first.
     add_action("wp_after_insert_post", [$this, "maybe_sync_document"], 10, 2);
@@ -73,6 +77,37 @@ class Setup
     add_action("add_meta_boxes", [$this, "add_document_meta_box"]);
     add_action("save_post", [$this, "save_document_meta_box"], 10, 2);
     add_action("admin_enqueue_scripts", [$this, "enqueue_meta_box_assets"]);
+  }
+
+  /**
+   * Ensure the token refresh cron event is scheduled.
+   *
+   * Covers upgrades from older versions where activation won't re-run.
+   *
+   * @return void
+   */
+  private function ensure_cron_scheduled(): void
+  {
+    if (
+      $this->connections_manager->is_connected() &&
+      !wp_next_scheduled("wireservice_refresh_token")
+    ) {
+      wp_schedule_event(time(), "twicedaily", "wireservice_refresh_token");
+    }
+  }
+
+  /**
+   * Handle the scheduled token refresh.
+   *
+   * @return void
+   */
+  public function handle_scheduled_refresh(): void
+  {
+    if (!$this->connections_manager->is_connected()) {
+      return;
+    }
+
+    $this->connections_manager->get_access_token();
   }
 
   /**

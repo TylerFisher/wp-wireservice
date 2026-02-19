@@ -67,6 +67,11 @@ function wireservice_activate()
 
   // Flush rewrite rules.
   flush_rewrite_rules();
+
+  // Schedule token refresh cron event.
+  if (!wp_next_scheduled("wireservice_refresh_token")) {
+    wp_schedule_event(time(), "twicedaily", "wireservice_refresh_token");
+  }
 }
 register_activation_hook(__FILE__, "wireservice_activate");
 
@@ -77,6 +82,9 @@ function wireservice_deactivate()
 {
   // Flush rewrite rules to remove our custom rules.
   flush_rewrite_rules();
+
+  // Clear scheduled token refresh.
+  wp_clear_scheduled_hook("wireservice_refresh_token");
 }
 register_deactivation_hook(__FILE__, "wireservice_deactivate");
 

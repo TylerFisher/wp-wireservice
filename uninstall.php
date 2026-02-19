@@ -9,6 +9,9 @@ if (!defined("WP_UNINSTALL_PLUGIN")) {
   die();
 }
 
+// Clear scheduled events.
+wp_clear_scheduled_hook("wireservice_refresh_token");
+
 // Remove plugin options.
 delete_option("wireservice_connection");
 delete_option("wireservice_client_id");
