@@ -8,6 +8,10 @@ declare(strict_types=1);
 
 namespace Wireservice;
 
+if (! defined('ABSPATH')) {
+  exit;
+}
+
 class Admin
 {
   /**
@@ -92,6 +96,7 @@ class Admin
       "nonce" => wp_create_nonce("wireservice_backfill"),
     ]);
 
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab navigation.
     $active_tab = isset($_GET["tab"]) ? sanitize_key($_GET["tab"]) : "settings";
 
     if ($active_tab === "records") {

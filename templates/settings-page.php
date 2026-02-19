@@ -42,7 +42,8 @@ defined('ABSPATH') || exit;
 <div class="wrap">
     <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
 
-    <?php $active_tab = isset($_GET["tab"]) ? sanitize_key($_GET["tab"]) : "settings"; ?>
+    <?php // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab navigation.
+    $active_tab = isset($_GET["tab"]) ? sanitize_key($_GET["tab"]) : "settings"; ?>
     <nav class="nav-tab-wrapper">
         <a href="<?php echo esc_url(admin_url("options-general.php?page=wireservice&tab=settings")); ?>"
            class="nav-tab <?php echo $active_tab === "settings" ? "nav-tab-active" : ""; ?>">
@@ -68,11 +69,11 @@ defined('ABSPATH') || exit;
                             <strong class="wireservice-display-name">Connected to @<?php echo esc_html($session["handle"]); ?></strong>
                         </div>
                     </div>
-                <?php
-                /* translators: %s: user handle */
-                else: ?>
+                <?php else: ?>
                     <p>
-                        <?php printf(
+                        <?php
+                        printf(
+                          /* translators: %s: user handle */
                           esc_html__("Connected as: %s", "wireservice"),
                           "<strong>" . esc_html($connection["handle"] ?? "Unknown") . "</strong>",
                         ); ?>

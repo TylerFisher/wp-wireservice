@@ -8,6 +8,10 @@ declare(strict_types=1);
 
 namespace Wireservice\Endpoints;
 
+if (! defined('ABSPATH')) {
+  exit;
+}
+
 use Wireservice\ConnectionsManager;
 use Wireservice\API;
 use WP_REST_Controller;

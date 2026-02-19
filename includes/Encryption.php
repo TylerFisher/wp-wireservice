@@ -8,6 +8,10 @@ declare(strict_types=1);
 
 namespace Wireservice;
 
+if (! defined('ABSPATH')) {
+  exit;
+}
+
 class Encryption
 {
   /**

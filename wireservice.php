@@ -35,7 +35,7 @@ if (version_compare($wp_version, WIRESERVICE_MIN_WP_VERSION, "<")) {
           "Wireservice requires WordPress %s or higher.",
           "wireservice",
         ),
-        WIRESERVICE_MIN_WP_VERSION,
+        esc_html(WIRESERVICE_MIN_WP_VERSION),
       ),
     );
   });

@@ -8,6 +8,10 @@ declare(strict_types=1);
 
 namespace Wireservice;
 
+if (! defined('ABSPATH')) {
+  exit;
+}
+
 class Setup
 {
   private ConnectionsManager $connections_manager;
@@ -476,10 +480,12 @@ class Setup
     callable $sanitizer,
     bool $allow_falsy = false,
   ): void {
+    // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in save_document_meta_box().
     if (!isset($_POST[$post_key])) {
       return;
     }
 
+    // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified in caller; value sanitized by $sanitizer.
     $value = $sanitizer(wp_unslash($_POST[$post_key]));
     $is_empty = $allow_falsy ? $value === "" : empty($value);
 

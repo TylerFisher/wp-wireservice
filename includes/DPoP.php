@@ -8,6 +8,10 @@ declare(strict_types=1);
 
 namespace Wireservice;
 
+if (! defined('ABSPATH')) {
+  exit;
+}
+
 use danielburger1337\OAuth2\DPoP\DPoPProofFactory;
 use danielburger1337\OAuth2\DPoP\Encoder\WebTokenFrameworkDPoPTokenEncoder;
 use danielburger1337\OAuth2\DPoP\Model\AccessTokenModel;

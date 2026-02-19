@@ -8,6 +8,10 @@ declare(strict_types=1);
 
 namespace Wireservice;
 
+if (! defined('ABSPATH')) {
+  exit;
+}
+
 class API
 {
   /**
@@ -88,7 +92,7 @@ class API
     $status_code = wp_remote_retrieve_response_code($response);
     $body = json_decode(wp_remote_retrieve_body($response), true);
 
-    return $this->maybe_error($status_code, $body, "api_error", "API request failed.");
+    return $this->maybe_error($status_code, $body, "api_error", __("API request failed.", "wireservice"));
   }
 
   /**
@@ -161,7 +165,7 @@ class API
       return $this->pds_request($method, $endpoint, $original_args, $response_nonce);
     }
 
-    return $this->maybe_error($status_code, $body, "pds_error", "PDS request failed.");
+    return $this->maybe_error($status_code, $body, "pds_error", __("PDS request failed.", "wireservice"));
   }
 
   /**
@@ -526,7 +530,7 @@ class API
   ) {
     if ($status_code >= 400) {
       $error_message = $body["error"]
-        ?? ($body["message"] ?? __($default_msg, "wireservice"));
+        ?? ($body["message"] ?? $default_msg);
       return new \WP_Error($error_code, $error_message, [
         "status" => $status_code,
       ]);

@@ -8,6 +8,10 @@ declare(strict_types=1);
 
 namespace Wireservice;
 
+if (! defined('ABSPATH')) {
+  exit;
+}
+
 use danielburger1337\OAuth2\DPoP\NonceStorage\NonceStorageInterface;
 
 class NonceStorage implements NonceStorageInterface
