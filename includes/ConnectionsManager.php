@@ -384,12 +384,23 @@ class ConnectionsManager
       return $response;
     }
 
+    $status_code = wp_remote_retrieve_response_code($response);
     $body = json_decode(wp_remote_retrieve_body($response), true);
 
-    if (empty($body["access_token"])) {
+    if ($status_code >= 400 || empty($body["access_token"])) {
+      // Clear the stale connection so the user can reconnect.
+      delete_option("wireservice_connection");
+
+      $error_message = $body["error_description"]
+        ?? ($body["error"] ?? __("Token refresh failed.", "wireservice"));
+
       return new \WP_Error(
         "refresh_failed",
-        __("Token refresh failed.", "wireservice"),
+        sprintf(
+          /* translators: %s: error detail from the server */
+          __("Session expired: %s. Please reconnect your account.", "wireservice"),
+          $error_message,
+        ),
       );
     }
 
