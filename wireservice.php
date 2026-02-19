@@ -2,17 +2,16 @@
 declare(strict_types=1);
 /**
  * Plugin Name: Wireservice
- * Plugin URI: https://example.com/wireservice
+ * Plugin URI: https://wireservice.net
  * Description: A WordPress plugin for publishing posts to the AT Protocol based on the standard.site lexicon.
  * Version: 1.1.0
  * Author: Tyler Fisher
- * Author URI: https://example.com
+ * Author URI: https://tylerjfisher.com
  * License: AGPL-3.0+
  * License URI: https://www.gnu.org/licenses/agpl-3.0.html
  * Requires at least: 6.7
  * Requires PHP: 8.4
  * Text Domain: wireservice
- * Domain Path: /languages
  */
 
 // If this file is called directly, abort.
