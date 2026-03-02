@@ -84,7 +84,7 @@ class DPoP
 
       return $proof->proof;
     } catch (\Throwable $e) {
-      error_log("DPoP proof generation failed: " . $e->getMessage());
+      wp_trigger_error(__METHOD__, "DPoP proof generation failed: " . $e->getMessage());
       return false;
     }
   }

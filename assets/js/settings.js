@@ -283,5 +283,14 @@
     jQuery(".wireservice-color-picker").wpColorPicker();
 
     initBackfill();
+
+    var resetForm = document.getElementById("wireservice-reset-form");
+    if (resetForm) {
+      resetForm.addEventListener("submit", function (e) {
+        if (!confirm(wireserviceBackfill.resetConfirm)) {
+          e.preventDefault();
+        }
+      });
+    }
   });
 })();

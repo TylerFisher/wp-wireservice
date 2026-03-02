@@ -25,9 +25,9 @@ defined('ABSPATH') || exit;
     <strong><?php esc_html_e("Title Source", "wireservice"); ?></strong>
   </label><br>
   <select name="wireservice_title_source" id="wireservice_title_source" style="width: 100%;">
-    <?php foreach ($title_sources as $key => $label): ?>
-      <option value="<?php echo esc_attr($key); ?>" <?php selected($title_source, $key); ?>>
-        <?php echo esc_html($label); ?>
+    <?php foreach ($title_sources as $wireservice_key => $wireservice_label): ?>
+      <option value="<?php echo esc_attr($wireservice_key); ?>" <?php selected($title_source, $wireservice_key); ?>>
+        <?php echo esc_html($wireservice_label); ?>
       </option>
     <?php endforeach; ?>
   </select>
@@ -48,9 +48,9 @@ defined('ABSPATH') || exit;
     <strong><?php esc_html_e("Description Source", "wireservice"); ?></strong>
   </label><br>
   <select name="wireservice_description_source" id="wireservice_description_source" style="width: 100%;">
-    <?php foreach ($desc_sources as $key => $label): ?>
-      <option value="<?php echo esc_attr($key); ?>" <?php selected($desc_source, $key); ?>>
-        <?php echo esc_html($label); ?>
+    <?php foreach ($desc_sources as $wireservice_key => $wireservice_label): ?>
+      <option value="<?php echo esc_attr($wireservice_key); ?>" <?php selected($desc_source, $wireservice_key); ?>>
+        <?php echo esc_html($wireservice_label); ?>
       </option>
     <?php endforeach; ?>
   </select>
@@ -70,18 +70,18 @@ defined('ABSPATH') || exit;
     <strong><?php esc_html_e("Cover Image Source", "wireservice"); ?></strong>
   </label><br>
   <select name="wireservice_image_source" id="wireservice_image_source" style="width: 100%;">
-    <?php foreach ($image_sources as $key => $label): ?>
-      <option value="<?php echo esc_attr($key); ?>" <?php selected($image_source, $key); ?>>
-        <?php echo esc_html($label); ?>
+    <?php foreach ($image_sources as $wireservice_key => $wireservice_label): ?>
+      <option value="<?php echo esc_attr($wireservice_key); ?>" <?php selected($image_source, $wireservice_key); ?>>
+        <?php echo esc_html($wireservice_label); ?>
       </option>
     <?php endforeach; ?>
   </select>
   <div id="wireservice-custom-image-field" style="display:none; margin-top: 8px;">
     <div id="wireservice-custom-image-preview">
       <?php if (!empty($custom_image_id)):
-        $thumb = wp_get_attachment_image_url($custom_image_id, "thumbnail");
+        $wireservice_thumb = wp_get_attachment_image_url($custom_image_id, "thumbnail");
       ?>
-        <img src="<?php echo esc_url($thumb); ?>"
+        <img src="<?php echo esc_url($wireservice_thumb); ?>"
              style="max-width:150px;height:auto;display:block;margin-bottom:8px;" />
       <?php endif; ?>
     </div>
@@ -97,7 +97,7 @@ defined('ABSPATH') || exit;
     <button type="button"
             class="button"
             id="wireservice-remove-image"
-            style="<?php echo empty($custom_image_id) ? 'display:none;' : ''; ?>">
+            style="<?php echo esc_attr(empty($custom_image_id) ? 'display:none;' : ''); ?>">
       <?php esc_html_e("Remove Image", "wireservice"); ?>
     </button>
     <p class="description"><?php esc_html_e("Images must be less than 1MB.", "wireservice"); ?></p>

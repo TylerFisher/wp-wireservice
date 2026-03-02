@@ -181,7 +181,7 @@ class Setup
 
     if (empty($at_uri)) {
       status_header(404);
-      echo "Publication not found";
+      echo esc_html("Publication not found");
       exit();
     }
 
@@ -441,52 +441,44 @@ class Setup
       return;
     }
 
-    $fields = [
-      ["wireservice_title_source", "_wireservice_title_source", "sanitize_text_field"],
-      ["wireservice_description_source", "_wireservice_description_source", "sanitize_text_field"],
-      ["wireservice_image_source", "_wireservice_image_source", "sanitize_text_field"],
-      ["wireservice_custom_title", "_wireservice_custom_title", "sanitize_text_field"],
-      ["wireservice_custom_description", "_wireservice_custom_description", "sanitize_textarea_field"],
-      ["wireservice_custom_image_id", "_wireservice_custom_image_id", "absint"],
-    ];
-
-    foreach ($fields as [$post_key, $meta_key, $sanitizer]) {
-      $this->save_meta_field($post_id, $post_key, $meta_key, $sanitizer);
+    if (isset($_POST["wireservice_title_source"])) {
+      $this->save_meta_field($post_id, "_wireservice_title_source", sanitize_text_field(wp_unslash($_POST["wireservice_title_source"])));
     }
-
-    $this->save_meta_field(
-      $post_id,
-      "wireservice_include_content",
-      "_wireservice_include_content",
-      "sanitize_text_field",
-      allow_falsy: true,
-    );
+    if (isset($_POST["wireservice_description_source"])) {
+      $this->save_meta_field($post_id, "_wireservice_description_source", sanitize_text_field(wp_unslash($_POST["wireservice_description_source"])));
+    }
+    if (isset($_POST["wireservice_image_source"])) {
+      $this->save_meta_field($post_id, "_wireservice_image_source", sanitize_text_field(wp_unslash($_POST["wireservice_image_source"])));
+    }
+    if (isset($_POST["wireservice_custom_title"])) {
+      $this->save_meta_field($post_id, "_wireservice_custom_title", sanitize_text_field(wp_unslash($_POST["wireservice_custom_title"])));
+    }
+    if (isset($_POST["wireservice_custom_description"])) {
+      $this->save_meta_field($post_id, "_wireservice_custom_description", sanitize_textarea_field(wp_unslash($_POST["wireservice_custom_description"])));
+    }
+    if (isset($_POST["wireservice_custom_image_id"])) {
+      $this->save_meta_field($post_id, "_wireservice_custom_image_id", absint(wp_unslash($_POST["wireservice_custom_image_id"])));
+    }
+    if (isset($_POST["wireservice_include_content"])) {
+      $this->save_meta_field($post_id, "_wireservice_include_content", sanitize_text_field(wp_unslash($_POST["wireservice_include_content"])), allow_falsy: true);
+    }
   }
 
   /**
-   * Save a single meta box field from POST data.
+   * Save or delete a single post meta field.
    *
-   * @param int      $post_id     The post ID.
-   * @param string   $post_key    The $_POST key.
-   * @param string   $meta_key    The post meta key.
-   * @param callable $sanitizer   Sanitization function.
-   * @param bool     $allow_falsy Whether to store falsy values like "0".
+   * @param int           $post_id     The post ID.
+   * @param string        $meta_key    The post meta key.
+   * @param string|int    $value       The sanitized value.
+   * @param bool          $allow_falsy Whether to store falsy values like "0".
    * @return void
    */
   private function save_meta_field(
     int $post_id,
-    string $post_key,
     string $meta_key,
-    callable $sanitizer,
+    string|int $value,
     bool $allow_falsy = false,
   ): void {
-    // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified in save_document_meta_box().
-    if (!isset($_POST[$post_key])) {
-      return;
-    }
-
-    // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified in caller; value sanitized by $sanitizer.
-    $value = $sanitizer(wp_unslash($_POST[$post_key]));
     $is_empty = $allow_falsy ? $value === "" : empty($value);
 
     if ($is_empty) {

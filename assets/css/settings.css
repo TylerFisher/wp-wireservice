@@ -1,0 +1,140 @@
+.wireservice-settings {
+    max-width: 800px;
+}
+.wireservice-connection-status {
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+.wireservice-connection-status.connected {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+}
+.wireservice-connection-status.disconnected {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+.wireservice-error {
+    color: #dc3545;
+    font-weight: 500;
+}
+.wireservice-profile {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+.wireservice-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.wireservice-profile-info {
+    flex: 1;
+}
+.wireservice-display-name {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 2px;
+}
+.wireservice-handle {
+    color: #666;
+    font-size: 14px;
+}
+.wireservice-bio {
+    margin: 8px 0;
+    font-size: 14px;
+    color: #333;
+}
+.wireservice-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 13px;
+    color: #666;
+    margin: 8px 0 0;
+}
+.wireservice-advanced-settings summary {
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #50575e;
+    padding: 4px 0;
+}
+.wireservice-advanced-settings summary:hover {
+    color: #1d2327;
+}
+.wireservice-progress-bar {
+    width: 100%;
+    height: 20px;
+    background: #f0f0f1;
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+.wireservice-progress-bar-fill {
+    height: 100%;
+    background: #2271b1;
+    transition: width 0.3s ease;
+}
+.wireservice-backfill-errors {
+    margin-top: 10px;
+}
+.wireservice-backfill-errors summary {
+    cursor: pointer;
+    color: #d63638;
+    font-weight: 500;
+}
+.wireservice-records {
+    max-width: 800px;
+}
+.wireservice-record-table {
+    border-collapse: collapse;
+}
+.wireservice-record-table th {
+    width: 160px;
+    text-align: left;
+    padding: 8px 12px;
+    vertical-align: top;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.wireservice-record-table td {
+    padding: 8px 12px;
+    word-break: break-all;
+}
+.wireservice-record-table code {
+    font-size: 12px;
+    background: #f0f0f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+.wireservice-document-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    margin-bottom: 16px;
+}
+.wireservice-document-card-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f1;
+}
+.wireservice-document-card-header h3 {
+    margin: 0;
+    font-size: 14px;
+}
+.wireservice-document-card-body {
+    padding: 0;
+}
+.wireservice-document-card-body .wireservice-record-table {
+    border: none;
+}
+.wireservice-color-swatch {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+    vertical-align: middle;
+    margin-right: 4px;
+}

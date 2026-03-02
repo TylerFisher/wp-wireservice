@@ -234,6 +234,91 @@ class Publication
   }
 
   /**
+   * Find an existing publication record on the PDS that matches this site's URL.
+   *
+   * @return array|null The matching record (uri, cid, value keys) or null.
+   */
+  public function find_matching_record(): ?array
+  {
+    $site_url = rtrim(home_url(), "/");
+    $cursor = null;
+
+    do {
+      $result = $this->api->list_records(self::LEXICON, 100, $cursor);
+
+      if (is_wp_error($result)) {
+        return null;
+      }
+
+      foreach ($result["records"] ?? [] as $record) {
+        $record_url = rtrim($record["value"]["url"] ?? "", "/");
+        if ($record_url === $site_url) {
+          return $record;
+        }
+      }
+
+      $cursor = $result["cursor"] ?? null;
+    } while ($cursor);
+
+    return null;
+  }
+
+  /**
+   * Adopt an existing publication record from the PDS.
+   *
+   * @param array $record The record array with uri, cid, and value keys.
+   * @return void
+   */
+  public function adopt_record(array $record): void
+  {
+    if (empty($record["uri"]) || !is_string($record["uri"]) || !isset($record["value"])) {
+      return;
+    }
+
+    $this->save_at_uri(sanitize_text_field($record["uri"]));
+
+    $value = $record["value"];
+    $theme = $value["basicTheme"] ?? null;
+
+    // save_publication_data() sanitizes all values (esc_url_raw, sanitize_text_field,
+    // sanitize_textarea_field, sanitize_hex_color, absint).
+    $data = [
+      "url" => $value["url"] ?? home_url(),
+      "name" => $value["name"] ?? "",
+      "description" => $value["description"] ?? "",
+      "icon_attachment_id" => 0,
+      "theme_background" => $theme ? self::rgb_to_hex($theme["background"] ?? null) : "",
+      "theme_foreground" => $theme ? self::rgb_to_hex($theme["foreground"] ?? null) : "",
+      "theme_accent" => $theme ? self::rgb_to_hex($theme["accent"] ?? null) : "",
+      "theme_accent_foreground" => $theme ? self::rgb_to_hex($theme["accentForeground"] ?? null) : "",
+      "show_in_discover" => isset($value["preferences"]["showInDiscover"])
+        ? ($value["preferences"]["showInDiscover"] ? "1" : "0")
+        : "",
+    ];
+
+    $this->save_publication_data($data);
+  }
+
+  /**
+   * Convert an RGB color array to a hex color string.
+   *
+   * @param array|null $color RGB array with r, g, b keys.
+   * @return string Hex color (e.g. "#ff0000") or empty string.
+   */
+  private static function rgb_to_hex(?array $color): string
+  {
+    if ($color === null || !isset($color["r"], $color["g"], $color["b"])) {
+      return "";
+    }
+
+    $r = max(0, min(255, (int) $color["r"]));
+    $g = max(0, min(255, (int) $color["g"]));
+    $b = max(0, min(255, (int) $color["b"]));
+
+    return sprintf("#%02x%02x%02x", $r, $g, $b);
+  }
+
+  /**
    * Delete the publication record from ATProto.
    *
    * @return array|\WP_Error|null The response, error, or null if no record exists.

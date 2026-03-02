@@ -2,7 +2,7 @@
 declare(strict_types=1);
 /**
  * Plugin Name: Wireservice
- * Plugin URI: https://wireservice.net
+ * Plugin URI: https://wordpress.wireservice.net
  * Description: A WordPress plugin for publishing posts to the AT Protocol based on the standard.site lexicon.
  * Version: 1.1.0
  * Author: Tyler Fisher

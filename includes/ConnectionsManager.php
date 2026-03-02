@@ -71,6 +71,13 @@ class ConnectionsManager
     $state = wp_generate_password(32, false);
     set_transient("wireservice_oauth_state", $state, HOUR_IN_SECONDS);
 
+    // Store a WordPress nonce for callback verification.
+    set_transient(
+      "wireservice_oauth_nonce",
+      wp_create_nonce("wireservice_oauth_callback"),
+      HOUR_IN_SECONDS,
+    );
+
     $params = [
       "client_id" => $client_id,
       "redirect_uri" => $this->get_redirect_uri(),
@@ -185,20 +192,37 @@ class ConnectionsManager
    */
   public function handle_oauth_callback(): void
   {
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-    if (!isset($_GET["page"]) || "wireservice" !== $_GET["page"]) {
+    $page = filter_input(INPUT_GET, "page");
+    if ($page !== "wireservice") {
       return;
     }
 
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-    if (!isset($_GET["code"]) || !isset($_GET["state"])) {
+    $code = filter_input(INPUT_GET, "code");
+    $state = filter_input(INPUT_GET, "state");
+    if ($code === null || $state === null) {
       return;
     }
 
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-    $code = sanitize_text_field(wp_unslash($_GET["code"]));
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-    $state = sanitize_text_field(wp_unslash($_GET["state"]));
+    // Verify user permissions and the stored WordPress nonce.
+    if (!current_user_can("manage_options")) {
+      return;
+    }
+
+    $stored_nonce = get_transient("wireservice_oauth_nonce");
+    if (!$stored_nonce || !wp_verify_nonce($stored_nonce, "wireservice_oauth_callback")) {
+      add_settings_error(
+        "wireservice",
+        "invalid_nonce",
+        __("Security check failed. Please try again.", "wireservice"),
+        "error",
+      );
+      return;
+    }
+
+    delete_transient("wireservice_oauth_nonce");
+
+    $code = sanitize_text_field($code);
+    $state = sanitize_text_field($state);
 
     // Verify state.
     $stored_state = get_transient("wireservice_oauth_state");

@@ -33,6 +33,7 @@ class Admin
   {
     add_action("admin_menu", [$this, "add_admin_menu"]);
     add_action("admin_init", [$this, "register_settings"]);
+    add_action("admin_init", [$this, "maybe_adopt_existing_publication"]);
     add_action("admin_enqueue_scripts", [$this, "enqueue_settings_assets"]);
     add_action("admin_post_wireservice_sync_publication", [
       $this,
@@ -83,6 +84,13 @@ class Admin
     wp_enqueue_media();
     wp_enqueue_style("wp-color-picker");
 
+    wp_enqueue_style(
+      "wireservice-settings",
+      WIRESERVICE_PLUGIN_URL . "assets/css/settings.css",
+      [],
+      WIRESERVICE_VERSION,
+    );
+
     wp_enqueue_script(
       "wireservice-settings",
       WIRESERVICE_PLUGIN_URL . "assets/js/settings.js",
@@ -94,10 +102,10 @@ class Admin
     wp_localize_script("wireservice-settings", "wireserviceBackfill", [
       "ajaxUrl" => admin_url("admin-ajax.php"),
       "nonce" => wp_create_nonce("wireservice_backfill"),
+      "resetConfirm" => __("Are you sure you want to reset all Wireservice data? This cannot be undone.", "wireservice"),
     ]);
 
-    // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only tab navigation.
-    $active_tab = isset($_GET["tab"]) ? sanitize_key($_GET["tab"]) : "settings";
+    $active_tab = sanitize_key(filter_input(INPUT_GET, "tab") ?? "settings");
 
     if ($active_tab === "records") {
       wp_enqueue_script(
@@ -401,6 +409,8 @@ class Admin
       $doc_image_sources = SourceOptions::doc_image_sources();
     }
 
+    $active_tab = sanitize_key(filter_input(INPUT_GET, "tab") ?? "settings");
+
     include WIRESERVICE_PLUGIN_DIR . "templates/settings-page.php";
   }
 
@@ -604,23 +614,14 @@ class Admin
     delete_transient("wireservice_oauth_state");
 
     // Remove post meta for documents.
-    global $wpdb;
-    $wpdb->delete($wpdb->postmeta, ["meta_key" => "_wireservice_document_uri"]);
-    $wpdb->delete($wpdb->postmeta, ["meta_key" => "_wireservice_title_source"]);
-    $wpdb->delete($wpdb->postmeta, [
-      "meta_key" => "_wireservice_description_source",
-    ]);
-    $wpdb->delete($wpdb->postmeta, ["meta_key" => "_wireservice_image_source"]);
-    $wpdb->delete($wpdb->postmeta, ["meta_key" => "_wireservice_custom_title"]);
-    $wpdb->delete($wpdb->postmeta, [
-      "meta_key" => "_wireservice_custom_description",
-    ]);
-    $wpdb->delete($wpdb->postmeta, [
-      "meta_key" => "_wireservice_custom_image_id",
-    ]);
-    $wpdb->delete($wpdb->postmeta, [
-      "meta_key" => "_wireservice_include_content",
-    ]);
+    delete_post_meta_by_key("_wireservice_document_uri");
+    delete_post_meta_by_key("_wireservice_title_source");
+    delete_post_meta_by_key("_wireservice_description_source");
+    delete_post_meta_by_key("_wireservice_image_source");
+    delete_post_meta_by_key("_wireservice_custom_title");
+    delete_post_meta_by_key("_wireservice_custom_description");
+    delete_post_meta_by_key("_wireservice_custom_image_id");
+    delete_post_meta_by_key("_wireservice_include_content");
 
     add_settings_error(
       "wireservice",
@@ -709,22 +710,25 @@ class Admin
       "page",
     ]);
 
-    $query = new \WP_Query([
+    $all_post_ids = get_posts([
       "post_type" => $post_types,
       "post_status" => "publish",
       "posts_per_page" => -1,
       "fields" => "ids",
-      "meta_query" => [
-        [
-          "key" => Document::META_KEY_URI,
-          "compare" => "NOT EXISTS",
-        ],
-      ],
     ]);
 
+    update_meta_cache("post", $all_post_ids);
+
+    $unsynced_ids = [];
+    foreach ($all_post_ids as $post_id) {
+      if (!get_post_meta($post_id, Document::META_KEY_URI, true)) {
+        $unsynced_ids[] = $post_id;
+      }
+    }
+
     wp_send_json_success([
-      "total" => $query->found_posts,
-      "post_ids" => $query->posts,
+      "total" => count($unsynced_ids),
+      "post_ids" => $unsynced_ids,
     ]);
   }
 
@@ -922,5 +926,51 @@ class Admin
     ));
 
     wp_send_json_success($result);
+  }
+
+  /**
+   * Adopt an existing publication record from the PDS after a fresh OAuth connection.
+   *
+   * Runs on admin_init when redirected back from OAuth (connected=1 query param).
+   * If the PDS already has a publication record matching this site's URL, adopts it
+   * so the user doesn't create a duplicate.
+   *
+   * @return void
+   */
+  public function maybe_adopt_existing_publication(): void
+  {
+    $page = sanitize_key(filter_input(INPUT_GET, "page") ?? "");
+    $connected = sanitize_key(filter_input(INPUT_GET, "connected") ?? "");
+
+    if ($page !== "wireservice" || $connected !== "1") {
+      return;
+    }
+
+    if (!current_user_can("manage_options")) {
+      return;
+    }
+
+    if (!$this->connections_manager->is_connected()) {
+      return;
+    }
+
+    if ($this->publication->get_at_uri()) {
+      return;
+    }
+
+    $record = $this->publication->find_matching_record();
+
+    if (!$record) {
+      return;
+    }
+
+    $this->publication->adopt_record($record);
+
+    add_settings_error(
+      "wireservice",
+      "publication_adopted",
+      __("An existing publication record was found on your PDS and has been linked.", "wireservice"),
+      "info",
+    );
   }
 }

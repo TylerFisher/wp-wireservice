@@ -1,14 +1,14 @@
 === Wireservice ===
-Contributors: tylerfisher
-Tags: atproto, bluesky, fediverse, syndication
+Contributors: tylrfishr
+Tags: atproto, bluesky, syndication
 Requires at least: 6.7
-Tested up to: 6.9.1
+Tested up to: 6.9
 Requires PHP: 8.4
 Stable tag: 1.1.0
 License: AGPLv3 or later
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
 
-A WordPress plugin that publishes your posts and pages to the [AT Protocol](https://atproto.com) using the [standard.site](https://standard.site) lexicons (`site.standard.publication` and `site.standard.document`).
+Publish your posts and pages to the AT Protocol using the standard.site lexicons.
 
 ## Requirements
 
