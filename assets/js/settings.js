@@ -9,6 +9,7 @@
 
   function toggleCustomField(selectId, fieldId, currentValueId) {
     var select = document.getElementById(selectId);
+    if (!select) return;
     var field = document.getElementById(fieldId);
     var currentValue = document.getElementById(currentValueId);
     var previewText = currentValue
@@ -41,6 +42,7 @@
 
   function initIconField() {
     var select = document.getElementById("wireservice_pub_icon_source");
+    if (!select) return;
     var customField = document.getElementById(
       "wireservice-pub-custom-icon-field"
     );
