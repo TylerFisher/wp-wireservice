@@ -4,7 +4,7 @@ declare(strict_types=1);
  * Plugin Name: Wireservice
  * Plugin URI: https://wordpress.wireservice.net
  * Description: A WordPress plugin for publishing posts to the AT Protocol based on the standard.site lexicon.
- * Version: 1.2.1
+ * Version: 1.2.0
  * Author: Tyler Fisher
  * Author URI: https://tylerjfisher.com
  * License: AGPL-3.0+
@@ -42,7 +42,7 @@ if (version_compare($wp_version, WIRESERVICE_MIN_WP_VERSION, "<")) {
 }
 
 // Plugin version.
-define("WIRESERVICE_VERSION", "1.2.1");
+define("WIRESERVICE_VERSION", "1.2.0");
 
 // Plugin directory path.
 define("WIRESERVICE_PLUGIN_DIR", plugin_dir_path(__FILE__));
