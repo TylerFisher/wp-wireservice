@@ -1,9 +1,9 @@
 === Wireservice ===
 Contributors: tylrfishr
 Tags: atproto, bluesky, syndication
-Requires at least: 6.7
+Requires at least: 6.4
 Tested up to: 6.9
-Requires PHP: 8.4
+Requires PHP: 8.3
 Stable tag: 1.2.0
 License: AGPLv3 or later
 License URI: https://www.gnu.org/licenses/agpl-3.0.html
@@ -12,18 +12,8 @@ Publish your posts and pages to the AT Protocol using the standard.site lexicons
 
 ## Requirements
 
-- PHP 8.4+
-- WordPress 6.7+
-- Composer
-
-## Installation
-
-1. Clone or download this repository into your `wp-content/plugins/` directory.
-2. Install dependencies:
-   ```bash
-   composer install
-   ```
-3. Activate the plugin in WordPress under **Plugins**.
+- PHP 8.3+
+- WordPress 6.4+
 
 ## Setup
 

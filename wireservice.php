@@ -9,8 +9,8 @@ declare(strict_types=1);
  * Author URI: https://tylerjfisher.com
  * License: AGPL-3.0+
  * License URI: https://www.gnu.org/licenses/agpl-3.0.html
- * Requires at least: 6.7
- * Requires PHP: 8.4
+ * Requires at least: 6.4
+ * Requires PHP: 8.3
  * Text Domain: wireservice
  */
 
@@ -20,7 +20,7 @@ if (!defined("WPINC")) {
 }
 
 // Minimum WordPress version.
-define("WIRESERVICE_MIN_WP_VERSION", "6.7");
+define("WIRESERVICE_MIN_WP_VERSION", "6.4");
 
 // Check WordPress version.
 global $wp_version;

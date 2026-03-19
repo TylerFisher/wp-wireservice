@@ -4,11 +4,11 @@ A WordPress plugin that publishes your posts and pages to the [AT Protocol](http
 
 ## Requirements
 
-- PHP 8.4+
-- WordPress 6.7+
+- PHP 8.3+
+- WordPress 6.4+
 - Composer
 
-## Installation
+## Dev Installation
 
 1. Clone or download this repository into your `wp-content/plugins/` directory.
 2. Install dependencies:

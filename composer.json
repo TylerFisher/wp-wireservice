@@ -1,17 +1,25 @@
 {
-    "name": "wireservice/wireservice",
-    "description": "A WordPress plugin for publishing posts to the AT Protocol based on the standard.site lexicon.",
-    "type": "wordpress-plugin",
-    "license": "AGPL-3.0-or-later",
-    "autoload": {
-        "psr-4": {
-            "Wireservice\\": "includes/"
-        }
-    },
-    "require": {
-        "php": "^8.4",
-        "danielburger1337/oauth2-dpop": "^1.2",
-        "web-token/jwt-library": "^4.1",
-        "symfony/clock": "^8.0"
+  "name": "wireservice/wireservice",
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/TylerFisher/oauth2-dpop-php"
     }
+  ],
+  "description": "A WordPress plugin for publishing posts to the AT Protocol based on the standard.site lexicon.",
+  "type": "wordpress-plugin",
+  "license": "AGPL-3.0-or-later",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "Wireservice\\": "includes/"
+    }
+  },
+  "require": {
+    "php": "^8.3",
+    "danielburger1337/oauth2-dpop": "dev-main as 1.2.0",
+    "web-token/jwt-library": "^4.1",
+    "symfony/clock": "^7.2"
+  }
 }
