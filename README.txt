@@ -98,7 +98,7 @@ atproto:blob:*/*"
 
 Or with Docker:
 
-```bash
+```
 docker build -t aip .
 docker run -p 8080:8080 \
   // all of the above env vars here
@@ -116,13 +116,13 @@ Once your AIP instance is running, update the OAuth Service URL in WordPress:
 
 This is stored as the `wireservice_oauth_url` option and can also be set programmatically:
 
-```php
+```
 update_option('wireservice_oauth_url', 'https://your-domain.com');
 ```
 
 ## Filters
 
-```php
+```
 // Customize which post types are synced (default: post, page)
 add_filter('wireservice_syncable_post_types', function ($types) {
     $types[] = 'custom_post_type';
