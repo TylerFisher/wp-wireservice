@@ -72,12 +72,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/TylerFisher/oauth2-dpop-php.git",
-                "reference": "3b955b346d02dd8ab91c669f4efc96791b4f48bb"
+                "reference": "10b257e14de3af2b49f3e4a6d5f3ce2aa9712b5f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/TylerFisher/oauth2-dpop-php/zipball/3b955b346d02dd8ab91c669f4efc96791b4f48bb",
-                "reference": "3b955b346d02dd8ab91c669f4efc96791b4f48bb",
+                "url": "https://api.github.com/repos/TylerFisher/oauth2-dpop-php/zipball/10b257e14de3af2b49f3e4a6d5f3ce2aa9712b5f",
+                "reference": "10b257e14de3af2b49f3e4a6d5f3ce2aa9712b5f",
                 "shasum": ""
             },
             "require": {
@@ -133,7 +133,7 @@
             "support": {
                 "source": "https://github.com/TylerFisher/oauth2-dpop-php/tree/main"
             },
-            "time": "2026-03-11T20:26:37+00:00"
+            "time": "2026-03-19T19:59:35+00:00"
         },
         {
             "name": "paragonie/constant_time_encoding",
