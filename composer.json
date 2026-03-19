@@ -19,7 +19,7 @@
   "require": {
     "php": "^8.3",
     "danielburger1337/oauth2-dpop": "dev-main as 1.2.0",
-    "web-token/jwt-library": "^4.1",
+    "web-token/jwt-library": "^3.4.6",
     "symfony/clock": "^7.2"
   }
 }
