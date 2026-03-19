@@ -16,6 +16,11 @@
       "Wireservice\\": "includes/"
     }
   },
+  "config": {
+    "platform": {
+      "php": "8.3.0"
+    }
+  },
   "require": {
     "php": "^8.3",
     "danielburger1337/oauth2-dpop": "dev-main as 1.2.0",
